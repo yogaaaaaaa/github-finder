@@ -1,5 +1,5 @@
 import { createContext, useReducer } from "react";
-import githubReducer from "./GithubReducer";
+import githubReducer from "./githubReducer";
 const GithubContext = createContext();
 
 const GITHUB_URL = process.env.REACT_APP_GITHUB_URL;
