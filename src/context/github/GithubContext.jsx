@@ -1,4 +1,3 @@
-import { FaCode, FaStore, FaUserFriends, FaUsers } from "react-icons/fa";
 import { createContext, useReducer } from "react";
 import githubReducer from "./githubReducer";
 const GithubContext = createContext();
@@ -12,30 +11,14 @@ export const GithubProvider = ({ children }) => {
     users: [],
     user: {},
     loading: false,
+    repos: [],
   };
 
   //USER REDUCER =============================
   //dispatch is for using the action from reducer file===============
   const [state, dispatch] = useReducer(githubReducer, initialState);
 
-  //FETCHING DATA(for testing purpose) ============================
-  const searchUsers = async (text) => {
-    const params = new URLSearchParams({
-      q: text,
-    });
-    setLoading();
-    const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
-      headers: {
-        Authorization: `token ${GITHUB_TOKEN}`,
-      },
-    });
-    const { items } = await response.json();
-    //dispatch is to replace setSomething =======================
-    dispatch({
-      type: "GET_USERS",
-      payload: items,
-    });
-  };
+ 
 
   //FETCH SINGLE USER===========================
   const getUser = async (login) => {
@@ -60,6 +43,27 @@ export const GithubProvider = ({ children }) => {
     }
   };
 
+  //GET USER REPOS=============
+  const getUserRepos = async (login) => {
+    setLoading();
+    const params = new URLSearchParams({
+      sort: 'created',
+      per_page: 10
+    });
+
+    const response = await fetch(`${GITHUB_URL}/users/${login}/repos?${params}`, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+      },
+    });
+    const data = await response.json();
+    //dispatch is to replace setSomething =======================
+    dispatch({
+      type: "GET_REPOS",
+      payload: data,
+    });
+  };
+
   //for clearing user search result=======================
   const clearUser = () =>
     dispatch({
@@ -74,12 +78,16 @@ export const GithubProvider = ({ children }) => {
   return (
     <GithubContext.Provider
       value={{
-        users: state.users,
-        loading: state.loading,
-        user: state.user,
-        searchUsers,
+        ...state,
+        // users: state.users,
+        // loading: state.loading,
+        // user: state.user,
+        // repos: state.repos,
+        dispatch,
+        // searchUsers,
         clearUser,
         getUser,
+        getUserRepos,
       }}
     >
       {children}

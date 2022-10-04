@@ -4,9 +4,10 @@ import { useParams } from "react-router-dom";
 import Spinner from "../components/layouts/Spinner";
 import { Link } from "react-router-dom";
 import { FaCode, FaTwitter, FaUsers, FaUserFriends, FaStore } from "react-icons/fa";
+import UserReposList from '../components/users/repos/UserReposList'
 
 function User() {
-  const { getUser, user, loading } = useContext(GithubContext);
+  const { getUser, user, loading, getUserRepos, repos } = useContext(GithubContext);
   const params = useParams();
 
   const {
@@ -28,6 +29,7 @@ function User() {
 
   useEffect(() => {
     getUser(params.login);
+    getUserRepos(params.login)
   }, []);
 
   if (loading) {
@@ -163,6 +165,8 @@ function User() {
             </div>
           </div>
         </div>
+
+        <UserReposList repos={repos}/>
       </div>
     </>
   );
