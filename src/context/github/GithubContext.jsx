@@ -1,3 +1,4 @@
+import { FaCode, FaStore, FaUserFriends, FaUsers } from "react-icons/fa";
 import { createContext, useReducer } from "react";
 import githubReducer from "./githubReducer";
 const GithubContext = createContext();
@@ -9,6 +10,7 @@ export const GithubProvider = ({ children }) => {
   //DEFINE INITIAL STATE ======================
   const initialState = {
     users: [],
+    user: {},
     loading: false,
   };
 
@@ -18,18 +20,16 @@ export const GithubProvider = ({ children }) => {
 
   //FETCHING DATA(for testing purpose) ============================
   const searchUsers = async (text) => {
-
     const params = new URLSearchParams({
-      q: text
-    })
-
+      q: text,
+    });
     setLoading();
     const response = await fetch(`${GITHUB_URL}/search/users?${params}`, {
       headers: {
         Authorization: `token ${GITHUB_TOKEN}`,
       },
     });
-    const {items} = await response.json();
+    const { items } = await response.json();
     //dispatch is to replace setSomething =======================
     dispatch({
       type: "GET_USERS",
@@ -37,10 +37,34 @@ export const GithubProvider = ({ children }) => {
     });
   };
 
+  //FETCH SINGLE USER===========================
+  const getUser = async (login) => {
+    setLoading();
+    const response = await fetch(`${GITHUB_URL}/users/${login}`, {
+      headers: {
+        Authorization: `token ${GITHUB_TOKEN}`,
+      },
+    });
+
+    if (response.status === 404) {
+      console.log(response.status);
+      window.location = "/notfound";
+    } else {
+      const data = await response.json();
+
+      //dispatch is to replace setSomething =======================
+      dispatch({
+        type: "GET_USER",
+        payload: data,
+      });
+    }
+  };
+
   //for clearing user search result=======================
-  const clearUser = () => dispatch({
-    type: "CLEAR_USERS",
-  })
+  const clearUser = () =>
+    dispatch({
+      type: "CLEAR_USERS",
+    });
 
   const setLoading = () =>
     dispatch({
@@ -52,8 +76,10 @@ export const GithubProvider = ({ children }) => {
       value={{
         users: state.users,
         loading: state.loading,
+        user: state.user,
         searchUsers,
         clearUser,
+        getUser,
       }}
     >
       {children}
