@@ -3,11 +3,18 @@ import GithubContext from "../context/github/GithubContext";
 import { useParams } from "react-router-dom";
 import Spinner from "../components/layouts/Spinner";
 import { Link } from "react-router-dom";
-import { FaCode, FaTwitter, FaUsers, FaUserFriends, FaStore } from "react-icons/fa";
-import UserReposList from '../components/users/repos/UserReposList'
+import {
+  FaCode,
+  FaTwitter,
+  FaUsers,
+  FaUserFriends,
+  FaStore,
+} from "react-icons/fa";
+import UserReposList from "../components/users/repos/UserReposList";
+import {getUserAndRepos } from "../context/github/GithubAction";
 
 function User() {
-  const { getUser, user, loading, getUserRepos, repos } = useContext(GithubContext);
+  const { user, loading, repos, dispatch } = useContext(GithubContext);
   const params = useParams();
 
   const {
@@ -28,9 +35,21 @@ function User() {
   } = user;
 
   useEffect(() => {
-    getUser(params.login);
-    getUserRepos(params.login)
-  }, []);
+    dispatch({ type: "SET_LOACDING" });
+    const getUserData = async () => {
+
+      const userAndRepos = await getUserAndRepos(params.login);
+      dispatch({type: "GET_USER_AND_REPOS", payload: userAndRepos})
+
+      // const userData = await getUser(params.login);
+      // dispatch({ type: "GET_USER", payload: userData });
+
+      // const reposData = await getUserRepos(params.login);
+      // dispatch({ type: "GET_REPOS", payload: reposData });
+    };
+
+    getUserData();
+  }, [dispatch, params.login]);
 
   if (loading) {
     return <Spinner />;
@@ -166,7 +185,7 @@ function User() {
           </div>
         </div>
 
-        <UserReposList repos={repos}/>
+        <UserReposList repos={repos} />
       </div>
     </>
   );
